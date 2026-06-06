@@ -1,0 +1,25 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Java build
+apartment-hub-server/target/
+*.class
+*.jar
+*.war
+
+# Node
+apartment-hub-web/node_modules/
+apartment-hub-web/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+*.log
+
+# Uploads (user data)
+uploads/
