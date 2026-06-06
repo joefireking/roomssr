@@ -85,6 +85,22 @@ public class BillServiceImpl extends ServiceImpl<BillMapper, Bill> implements Bi
             throw new BusinessException("Bill is cancelled");
         }
 
+        // Validate payment amount matches bill amount
+        if (dto.getAmount().compareTo(bill.getAmount()) != 0) {
+            throw new BusinessException("Payment amount does not match bill amount");
+        }
+
+        // Concurrent-safe update: only mark PAID if still PENDING/OVERDUE
+        boolean updated = lambdaUpdate()
+                .eq(Bill::getId, dto.getBillId())
+                .in(Bill::getStatus, BillStatus.PENDING, BillStatus.OVERDUE)
+                .set(Bill::getStatus, BillStatus.PAID)
+                .set(Bill::getPaidTime, LocalDateTime.now())
+                .update();
+        if (!updated) {
+            throw new BusinessException("Bill already paid or status changed");
+        }
+
         // Create payment record
         Payment payment = new Payment();
         payment.setPaymentNo(NoGenerator.paymentNo());
@@ -100,11 +116,6 @@ public class BillServiceImpl extends ServiceImpl<BillMapper, Bill> implements Bi
         payment.setRemark(dto.getRemark());
         payment.setOperatorId(operatorId);
         paymentService.save(payment);
-
-        // Update bill status
-        bill.setStatus(BillStatus.PAID);
-        bill.setPaidTime(LocalDateTime.now());
-        updateById(bill);
     }
 
     @Override

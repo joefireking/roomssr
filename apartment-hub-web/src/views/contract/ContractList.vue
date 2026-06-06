@@ -3,7 +3,7 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="草稿" :value="0" /><el-option label="生效" :value="1" />
             <el-option label="到期" :value="2" /><el-option label="终止" :value="3" />
           </el-select>
@@ -16,8 +16,12 @@
 
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="contractNo" label="合同编号" width="180" />
-        <el-table-column prop="tenantId" label="租户ID" />
-        <el-table-column prop="roomId" label="房间ID" />
+        <el-table-column label="租户">
+          <template #default="{ row }">{{ tenantMap[row.tenantId] || row.tenantId }}</template>
+        </el-table-column>
+        <el-table-column label="房间">
+          <template #default="{ row }">{{ roomMap[row.roomId] || row.roomId }}</template>
+        </el-table-column>
         <el-table-column prop="startDate" label="开始日期" />
         <el-table-column prop="endDate" label="结束日期" />
         <el-table-column prop="rentAmount" label="租金">
@@ -62,6 +66,19 @@ const total = ref(0)
 const query = reactive({ status: null as any, current: 1, size: 10 })
 const viewerVisible = ref(false)
 const viewerContractId = ref<number | null>(null)
+const tenantMap = ref<Record<number, string>>({})
+const roomMap = ref<Record<number, string>>({})
+
+async function loadLookups() {
+  try {
+    const [tRes, rRes]: any = await Promise.all([
+      request.get('/tenants/list', { params: { size: 1000 } }),
+      request.get('/rooms/list', { params: { size: 1000 } })
+    ])
+    tRes.data.records.forEach((t: any) => { tenantMap.value[t.id] = t.name })
+    rRes.data.records.forEach((r: any) => { roomMap.value[r.id] = r.roomNumber })
+  } catch { /* ignore */ }
+}
 
 const statusLabels: Record<number, string> = { 0: '草稿', 1: '生效', 2: '到期', 3: '终止' }
 const statusTypes: Record<number, string> = { 0: 'info', 1: 'success', 2: 'warning', 3: 'danger' }
@@ -91,5 +108,5 @@ async function handleTerminate(row: any) {
   } catch { /* cancelled */ }
 }
 
-onMounted(loadData)
+onMounted(() => { loadLookups(); loadData() })
 </script>

@@ -20,15 +20,21 @@ http.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+let isRedirectingToLogin = false
+
 http.interceptors.response.use(
   (response) => {
     const res = response.data as Result<unknown>
     if (res.code !== 200) {
       if (res.code === 401) {
-        const userStore = useUserStore()
-        userStore.logout()
-        ElMessage.warning('登录已过期，请重新登录')
-        router.push('/login')
+        if (!isRedirectingToLogin) {
+          isRedirectingToLogin = true
+          const userStore = useUserStore()
+          userStore.logout()
+          ElMessage.warning('登录已过期，请重新登录')
+          router.push('/login')
+          setTimeout(() => { isRedirectingToLogin = false }, 1000)
+        }
       } else {
         ElMessage.error(res.message || 'Error')
       }
@@ -38,10 +44,18 @@ http.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      const userStore = useUserStore()
-      userStore.logout()
-      ElMessage.warning('登录已过期，请重新登录')
-      router.push('/login')
+      // Skip if already handled by the success interceptor above
+      if (error.response?.data?.code === 401) {
+        return Promise.reject(error)
+      }
+      if (!isRedirectingToLogin) {
+        isRedirectingToLogin = true
+        const userStore = useUserStore()
+        userStore.logout()
+        ElMessage.warning('登录已过期，请重新登录')
+        router.push('/login')
+        setTimeout(() => { isRedirectingToLogin = false }, 1000)
+      }
     } else {
       ElMessage.error(error.response?.data?.message || error.message || 'Network Error')
     }

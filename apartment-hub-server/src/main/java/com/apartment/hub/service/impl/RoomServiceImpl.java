@@ -16,17 +16,30 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
 
     @Override
     @Transactional
-    public void changeStatus(Long roomId, Integer newStatus) {
+    public void changeStatus(Long roomId, Integer newStatusCode) {
         Room room = getById(roomId);
         if (room == null) {
             throw new BusinessException("Room not found");
         }
-        RoomStatus[] values = RoomStatus.values();
-        if (newStatus < 0 || newStatus >= values.length) {
-            throw new BusinessException("Invalid room status: " + newStatus);
+        RoomStatus target = RoomStatus.fromCode(newStatusCode);
+        RoomStatus current = room.getStatus();
+
+        // State transition validation
+        if (!isValidTransition(current, target)) {
+            throw new BusinessException("Invalid status transition: " + current + " -> " + target);
         }
-        room.setStatus(values[newStatus]);
+
+        room.setStatus(target);
         updateById(room);
+    }
+
+    private boolean isValidTransition(RoomStatus from, RoomStatus to) {
+        return switch (from) {
+            case VACANT -> to == RoomStatus.RENTED || to == RoomStatus.MAINTENANCE || to == RoomStatus.RESERVED;
+            case RENTED -> to == RoomStatus.VACANT;
+            case MAINTENANCE -> to == RoomStatus.VACANT;
+            case RESERVED -> to == RoomStatus.VACANT || to == RoomStatus.RENTED;
+        };
     }
 
     @Override

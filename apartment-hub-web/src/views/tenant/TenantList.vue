@@ -98,9 +98,11 @@ async function loadData() {
   } finally { loading.value = false }
 }
 
+const defaultForm = { id: null, name: '', gender: 1, phone: '', idCard: '', tag: '', emergencyContact: '', emergencyPhone: '', remark: '' }
+
 function showDialog(row?: any) {
-  if (row) Object.assign(form, row)
-  else Object.assign(form, { id: null, name: '', gender: 1, phone: '', idCard: '', tag: '', emergencyContact: '', emergencyPhone: '', remark: '' })
+  Object.keys(form).forEach(k => delete form[k])
+  Object.assign(form, row ? { ...row } : { ...defaultForm })
   dialogVisible.value = true
 }
 

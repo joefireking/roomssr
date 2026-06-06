@@ -29,12 +29,6 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
     @Override
     @Transactional
     public Contract createContract(ContractCreateDTO dto) {
-        // Validate room is available
-        Room room = roomService.getById(dto.getRoomId());
-        if (room == null || room.getStatus() != RoomStatus.VACANT) {
-            throw new BusinessException(ResultCode.ROOM_NOT_AVAILABLE);
-        }
-
         // Validate tenant exists
         Tenant tenant = tenantService.getById(dto.getTenantId());
         if (tenant == null) {
@@ -56,6 +50,16 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
             throw new BusinessException("Room already has an active contract for this period");
         }
 
+        // Concurrent-safe: atomically update room status from VACANT to RENTED
+        boolean locked = roomService.lambdaUpdate()
+                .eq(Room::getId, dto.getRoomId())
+                .eq(Room::getStatus, RoomStatus.VACANT)
+                .set(Room::getStatus, RoomStatus.RENTED)
+                .update();
+        if (!locked) {
+            throw new BusinessException(ResultCode.ROOM_NOT_AVAILABLE);
+        }
+
         // Create contract
         Contract contract = new Contract();
         contract.setContractNo(NoGenerator.contractNo());
@@ -69,10 +73,6 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
         contract.setStatus(ContractStatus.ACTIVE);
         contract.setRemark(dto.getRemark());
         save(contract);
-
-        // Change room status to RENTED
-        room.setStatus(RoomStatus.RENTED);
-        roomService.updateById(room);
 
         // Generate bills
         billService.generateBills(contract);
@@ -98,9 +98,9 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
                 .set(Bill::getStatus, BillStatus.CANCELLED)
                 .update();
 
-        // Reset room to vacant
+        // Only reset room to VACANT if it's currently RENTED
         Room room = roomService.getById(contract.getRoomId());
-        if (room != null) {
+        if (room != null && room.getStatus() == RoomStatus.RENTED) {
             room.setStatus(RoomStatus.VACANT);
             roomService.updateById(room);
         }
@@ -146,9 +146,9 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
                 .set(Bill::getStatus, BillStatus.CANCELLED)
                 .update();
 
-        // Reset room status
+        // Only reset room to VACANT if it's currently RENTED
         Room room = roomService.getById(contract.getRoomId());
-        if (room != null) {
+        if (room != null && room.getStatus() == RoomStatus.RENTED) {
             room.setStatus(RoomStatus.VACANT);
             roomService.updateById(room);
         }

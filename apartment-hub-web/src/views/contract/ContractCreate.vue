@@ -47,7 +47,7 @@
             <el-date-picker v-model="contractForm.endDate" type="date" value-format="YYYY-MM-DD" />
           </el-form-item>
           <el-form-item label="租金（元）" prop="rentAmount">
-            <el-input-number v-model="contractForm.rentAmount" :min="0" :precision="2" />
+            <el-input-number v-model="contractForm.rentAmount" :min="0.01" :precision="2" />
           </el-form-item>
           <el-form-item label="押金（元）" prop="depositAmount">
             <el-input-number v-model="contractForm.depositAmount" :min="0" :precision="2" />
@@ -108,7 +108,10 @@ const contractForm = reactive({
 const contractRules = {
   tenantId: [{ required: true, message: '必填', trigger: 'change' }],
   startDate: [{ required: true, message: '必填', trigger: 'change' }],
-  endDate: [{ required: true, message: '必填', trigger: 'change' }],
+  endDate: [
+    { required: true, message: '必填', trigger: 'change' },
+    { validator: (_r: any, v: string, cb: any) => v && contractForm.startDate && v <= contractForm.startDate ? cb(new Error('结束日期必须晚于开始日期')) : cb(), trigger: 'change' }
+  ],
   rentAmount: [{ required: true, message: '必填', trigger: 'change' }],
   depositAmount: [{ required: true, message: '必填', trigger: 'change' }]
 }

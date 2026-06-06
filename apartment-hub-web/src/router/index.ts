@@ -6,7 +6,10 @@ const Layout = () => import('@/layout/index.vue')
 
 function isTokenExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join('')))
     return payload.exp * 1000 < Date.now()
   } catch {
     return true
@@ -73,7 +76,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: 'discover',
         name: 'RoomDiscover',
         component: () => import('@/views/apartment/RoomDiscover.vue'),
-        meta: { title: 'Room Discovery' }
+        meta: { title: '房间发现' }
       }
     ]
   },
@@ -173,7 +176,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: 'list',
         name: 'AnnouncementList',
         component: () => import('@/views/announcement/AnnouncementList.vue'),
-        meta: { title: 'Announcement Management', icon: 'Bell' }
+        meta: { title: '公告管理', icon: 'Bell' }
       }
     ]
   },

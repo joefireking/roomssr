@@ -20,4 +20,11 @@ public enum RoomStatus {
         this.code = code;
         this.description = description;
     }
+
+    public static RoomStatus fromCode(int code) {
+        for (RoomStatus s : values()) {
+            if (s.code == code) return s;
+        }
+        throw new IllegalArgumentException("Invalid room status code: " + code);
+    }
 }

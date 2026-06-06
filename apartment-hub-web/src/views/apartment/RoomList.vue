@@ -3,12 +3,12 @@
     <el-card>
       <el-form inline>
         <el-form-item label="楼栋">
-          <el-select v-model="query.buildingId" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.buildingId" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option v-for="b in buildings" :key="b.id" :label="b.name" :value="b.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="空置" :value="0" /><el-option label="已租" :value="1" />
             <el-option label="维修" :value="2" /><el-option label="预定" :value="3" />
           </el-select>
@@ -152,9 +152,11 @@ async function loadData() {
   } finally { loading.value = false }
 }
 
+const defaultForm = { id: null, buildingId: null, roomTypeId: null, roomNumber: '', floor: 1, rentPrice: 0, image: '', status: 0 }
+
 function showDialog(row?: any) {
-  if (row) Object.assign(form, row)
-  else Object.assign(form, { id: null, buildingId: null, roomTypeId: null, roomNumber: '', floor: 1, rentPrice: 0, image: '', status: 0 })
+  Object.keys(form).forEach(k => delete form[k])
+  Object.assign(form, row ? { ...row } : { ...defaultForm })
   dialogVisible.value = true
 }
 

@@ -12,13 +12,13 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="待付" :value="0" /><el-option label="已付" :value="1" />
             <el-option label="逾期" :value="2" /><el-option label="取消" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="query.billType" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.billType" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="租金" :value="0" /><el-option label="押金" :value="1" />
             <el-option label="水电" :value="2" /><el-option label="物业" :value="3" />
           </el-select>
@@ -30,7 +30,9 @@
 
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="billNo" label="账单号" width="180" />
-        <el-table-column prop="tenantId" label="租户" />
+        <el-table-column label="租户">
+          <template #default="{ row }">{{ tenantMap[row.tenantId] || row.tenantId }}</template>
+        </el-table-column>
         <el-table-column prop="billType" label="类型">
           <template #default="{ row }">
             <el-tag :type="billTypeTag(row.billType)">{{ billTypeLabel(row.billType) }}</el-tag>
@@ -92,6 +94,19 @@ const total = ref(0)
 const payBill = ref<any>(null)
 const query = reactive({ status: null as any, billType: null as any, current: 1, size: 10 })
 const payForm = reactive({ paymentMethod: 0, amount: 0, remark: '' })
+const tenantMap = ref<Record<number, string>>({})
+const roomMap = ref<Record<number, string>>({})
+
+async function loadLookups() {
+  try {
+    const [tRes, rRes]: any = await Promise.all([
+      request.get('/tenants/list', { params: { size: 1000 } }),
+      request.get('/rooms/list', { params: { size: 1000 } })
+    ])
+    tRes.data.records.forEach((t: any) => { tenantMap.value[t.id] = t.name })
+    rRes.data.records.forEach((r: any) => { roomMap.value[r.id] = r.roomNumber })
+  } catch { /* ignore */ }
+}
 
 const statCards = ref([
   { label: '已付', value: '¥0', color: '#67c23a' },
@@ -145,5 +160,5 @@ async function handlePay() {
   } finally { paying.value = false }
 }
 
-onMounted(() => { loadData(); loadStats() })
+onMounted(() => { loadLookups(); loadData(); loadStats() })
 </script>

@@ -3,14 +3,14 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="待处理" :value="0" /><el-option label="已分配" :value="1" />
             <el-option label="处理中" :value="2" /><el-option label="已完成" :value="3" />
             <el-option label="已验证" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="query.type" placeholder="全部" clearable @change="loadData">
+          <el-select v-model="query.type" placeholder="全部" clearable @change="query.current = 1; loadData()">
             <el-option label="水管" :value="0" /><el-option label="家具" :value="1" />
             <el-option label="电器" :value="2" /><el-option label="网络" :value="3" />
             <el-option label="其他" :value="4" />
@@ -24,7 +24,9 @@
 
       <el-table :data="tableData" stripe v-loading="loading">
         <el-table-column prop="orderNo" label="工单号" width="180" />
-        <el-table-column prop="roomId" label="房间" />
+        <el-table-column label="房间">
+          <template #default="{ row }">{{ roomMap[row.roomId] || row.roomId }}</template>
+        </el-table-column>
         <el-table-column prop="type" label="类型">
           <template #default="{ row }">
             <el-tag size="small">{{ typeLabels[row.type] || '未知' }}</el-tag>
@@ -101,6 +103,14 @@ const createFormRef = ref()
 const query = reactive({ status: null as any, type: null as any, current: 1, size: 10 })
 const createForm = reactive({ roomId: null as any, type: 0, priority: 1, description: '' })
 const createRules = { roomId: [{ required: true, message: '必填', trigger: 'change' }], type: [{ required: true, message: '必填', trigger: 'change' }] }
+const roomMap = ref<Record<number, string>>({})
+
+async function loadRoomMap() {
+  try {
+    const res: any = await request.get('/rooms/list', { params: { size: 1000 } })
+    res.data.records.forEach((r: any) => { roomMap.value[r.id] = r.roomNumber })
+  } catch { /* ignore */ }
+}
 
 const typeLabels: Record<number, string> = { 0: '水管', 1: '家具', 2: '电器', 3: '网络', 4: '其他' }
 const statusLabels: Record<number, string> = { 0: '待处理', 1: '已分配', 2: '处理中', 3: '已完成', 4: '已验证' }
@@ -183,5 +193,5 @@ async function handleVerify(row: any) {
   }
 }
 
-onMounted(loadData)
+onMounted(() => { loadRoomMap(); loadData() })
 </script>
