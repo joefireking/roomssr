@@ -119,10 +119,10 @@ const typeLabels: Record<number, string> = { 0: '租金', 1: '押金', 2: '水�
 const typeTags: Record<number, string> = { 0: 'primary', 1: 'warning', 2: 'info', 3: '' }
 const statusLabels: Record<number, string> = { 0: '待付', 1: '已付', 2: '逾期', 3: '取消' }
 const statusTypes: Record<number, string> = { 0: 'warning', 1: 'success', 2: 'danger', 3: 'info' }
-function billTypeLabel(s: number) { return typeLabels[s] || '未知' }
-function billTypeTag(s: number) { return typeTags[s] || '' }
-function billStatusLabel(s: number) { return statusLabels[s] || '未知' }
-function billStatusType(s: number) { return statusTypes[s] || 'info' }
+function billTypeLabel(s: number) { return typeLabels[s ?? -1] || '未知' }
+function billTypeTag(s: number) { return typeTags[s ?? -1] || 'info' }
+function billStatusLabel(s: number) { return statusLabels[s ?? -1] || '未知' }
+function billStatusType(s: number) { return statusTypes[s ?? -1] || 'info' }
 
 async function loadStats() {
   try {

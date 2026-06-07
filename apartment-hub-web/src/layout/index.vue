@@ -15,7 +15,7 @@
         :collapse-transition="false"
       >
         <template v-for="item in menuRoutes" :key="item.path">
-          <el-sub-menu v-if="item.children && item.children.length > 1" :index="item.path">
+          <el-sub-menu v-if="item.children && item.children.length > 1" :index="item.path || '/'">
             <template #title>
               <el-icon v-if="item.meta?.icon"><component :is="item.meta.icon" /></el-icon>
               <span>{{ item.meta?.title }}</span>
@@ -23,7 +23,7 @@
             <el-menu-item
               v-for="child in item.children"
               :key="child.path"
-              :index="item.path + '/' + child.path"
+              :index="(item.path === '/' ? '' : item.path) + '/' + child.path"
             >
               {{ child.meta?.title }}
             </el-menu-item>
@@ -86,10 +86,11 @@ const menuRoutes = computed(() =>
 )
 
 function getMenuPath(item: RouteRecordRaw) {
-  if (item.children && item.children.length === 1) {
-    return item.path + '/' + item.children[0].path
+  if (item.children?.length === 1) {
+    const parent = item.path === '/' ? '' : item.path
+    return parent + '/' + item.children[0].path
   }
-  return item.redirect as string || item.path
+  return (item.redirect as string) || item.path
 }
 
 function getMenuMeta(item: RouteRecordRaw) {
