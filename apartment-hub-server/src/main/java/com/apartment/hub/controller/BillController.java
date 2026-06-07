@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
@@ -49,6 +50,7 @@ public class BillController {
         return Result.success(billService.getById(id));
     }
 
+    @PreAuthorize("hasAuthority('bill:pay')")
     @OperationLog(module = "Bill Management", operation = "Pay Bill")
     @PostMapping("/{id}/pay")
     public Result<Boolean> pay(@PathVariable Long id, @Valid @RequestBody PaymentDTO dto,

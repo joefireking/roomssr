@@ -32,7 +32,7 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
         // Validate tenant exists
         Tenant tenant = tenantService.getById(dto.getTenantId());
         if (tenant == null) {
-            throw new BusinessException("Tenant not found");
+            throw new BusinessException(ResultCode.TENANT_NOT_FOUND);
         }
 
         // Validate dates
@@ -85,7 +85,7 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
     public void terminateContract(Long contractId, String reason) {
         Contract contract = getById(contractId);
         if (contract == null || contract.getStatus() != ContractStatus.ACTIVE) {
-            throw new BusinessException("Contract not found or not active");
+            throw new BusinessException(ResultCode.CONTRACT_NOT_FOUND);
         }
         contract.setStatus(ContractStatus.TERMINATED);
         contract.setTerminateReason(reason);
@@ -111,7 +111,7 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
     public BigDecimal checkout(CheckoutDTO dto) {
         Contract contract = getById(dto.getContractId());
         if (contract == null || contract.getStatus() != ContractStatus.ACTIVE) {
-            throw new BusinessException("Contract not found or not active");
+            throw new BusinessException(ResultCode.CONTRACT_NOT_FOUND);
         }
 
         // Calculate refund

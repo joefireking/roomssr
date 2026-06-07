@@ -22,11 +22,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Long userId, String username, List<String> roles) {
+    public String generateToken(Long userId, String username, List<String> roles, List<String> permissions) {
         return Jwts.builder()
                 .subject(username)
                 .claim("userId", userId)
                 .claim("roles", roles)
+                .claim("permissions", permissions)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
@@ -52,6 +53,13 @@ public class JwtUtil {
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
         return parseToken(token).get("roles", List.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getPermissionsFromToken(String token) {
+        Claims claims = parseToken(token);
+        List<?> perms = claims.get("permissions", List.class);
+        return perms != null ? perms.stream().map(Object::toString).toList() : List.of();
     }
 
     public boolean isTokenValid(String token) {

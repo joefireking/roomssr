@@ -1,6 +1,7 @@
 package com.apartment.hub.service.impl;
 
 import com.apartment.hub.common.BusinessException;
+import com.apartment.hub.common.ResultCode;
 import com.apartment.hub.entity.Contract;
 import com.apartment.hub.entity.Tenant;
 import com.apartment.hub.enums.ContractStatus;
@@ -24,7 +25,7 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
                 .eq(Contract::getStatus, ContractStatus.ACTIVE)
                 .count();
         if (activeContracts > 0) {
-            throw new BusinessException("Cannot delete tenant with active contracts");
+            throw new BusinessException(ResultCode.TENANT_HAS_ACTIVE_CONTRACTS);
         }
         return super.removeById(id);
     }

@@ -67,26 +67,18 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useTable } from '@/composables/useTable'
 
-const loading = ref(false)
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ username: string }>({
+  url: '/sys/users/list',
+  filters: { username: '' }
+})
 const saving = ref(false)
 const dialogVisible = ref(false)
-const tableData = ref<any[]>([])
 const roles = ref<any[]>([])
-const total = ref(0)
 const formRef = ref()
-const query = reactive({ username: '', current: 1, size: 10 })
 const form = reactive<any>({ id: null, username: '', password: '', realName: '', phone: '', email: '', status: 1, roleIds: [] })
 const rules = { username: [{ required: true, message: '必填', trigger: 'blur' }] }
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/sys/users/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
-}
 
 async function loadRoles() {
   try {

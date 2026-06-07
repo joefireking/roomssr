@@ -3,12 +3,12 @@
     <el-card>
       <el-form inline>
         <el-form-item label="楼栋">
-          <el-select v-model="query.buildingId" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.buildingId" placeholder="全部" clearable @change="resetAndLoad">
             <el-option v-for="b in buildings" :key="b.id" :label="b.name" :value="b.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="空置" :value="0" /><el-option label="已租" :value="1" />
             <el-option label="维修" :value="2" /><el-option label="预定" :value="3" />
           </el-select>
@@ -16,10 +16,32 @@
         <el-form-item>
           <el-button type="primary" @click="query.current = 1; loadData()">搜索</el-button>
           <el-button type="success" @click="showDialog()">新增</el-button>
+          <el-button-group style="margin-left:8px">
+            <el-button :type="viewMode === 'table' ? 'primary' : ''" @click="viewMode = 'table'">列表</el-button>
+            <el-button :type="viewMode === 'card' ? 'primary' : ''" @click="viewMode = 'card'">卡片</el-button>
+          </el-button-group>
         </el-form-item>
       </el-form>
 
-      <el-table :data="tableData" stripe v-loading="loading">
+      <!-- Card View -->
+      <div v-if="viewMode === 'card'" v-loading="loading" class="room-card-grid">
+        <el-card v-for="room in tableData" :key="room.id" shadow="hover" class="room-card-item" @click="showDialog(room)">
+          <el-image v-if="room.image" :src="room.image" fit="cover" class="room-card-img" />
+          <div v-else class="room-card-img room-card-placeholder">无图片</div>
+          <div class="room-card-info">
+            <div class="room-card-header">
+              <span class="room-card-number">{{ room.roomNumber }}</span>
+              <el-tag :type="statusType(room.status)" size="small">{{ statusLabel(room.status) }}</el-tag>
+            </div>
+            <div class="room-card-detail">{{ room.buildingName || '-' }} | {{ room.typeName || '-' }} | {{ room.floor }}楼</div>
+            <div class="room-card-price">¥{{ room.rentPrice }}/月</div>
+          </div>
+        </el-card>
+        <el-empty v-if="!loading && tableData.length === 0" description="暂无数据" />
+      </div>
+
+      <!-- Table View -->
+      <el-table v-if="viewMode === 'table'" :data="tableData" stripe v-loading="loading">
         <el-table-column label="图片" width="100">
           <template #default="{ row }">
             <el-image v-if="row.image" :src="row.image" fit="cover" style="width:60px;height:60px;border-radius:6px" preview-teleported :preview-src-list="[row.image]" />
@@ -98,6 +120,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useTable } from '@/composables/useTable'
 
 const uploadUrl = '/api/upload'
 const uploadHeaders = computed(() => ({ Authorization: `Bearer ${localStorage.getItem('token') || ''}` }))
@@ -111,15 +134,16 @@ function onUploadError() {
   ElMessage.error('上传失败')
 }
 
-const loading = ref(false)
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ buildingId: any; status: any }>({
+  url: '/rooms/list',
+  filters: { buildingId: null, status: null }
+})
 const saving = ref(false)
 const dialogVisible = ref(false)
-const tableData = ref<any[]>([])
+const viewMode = ref<'table' | 'card'>('table')
 const buildings = ref<any[]>([])
 const roomTypes = ref<any[]>([])
-const total = ref(0)
 const formRef = ref()
-const query = reactive({ buildingId: null as any, status: null as any, current: 1, size: 10 })
 const form = reactive<any>({ id: null, buildingId: null, roomTypeId: null, roomNumber: '', floor: 1, rentPrice: 0, image: '', status: 0 })
 const rules = { buildingId: [{ required: true, message: '必填', trigger: 'change' }], roomNumber: [{ required: true, message: '必填', trigger: 'blur' }] }
 
@@ -141,15 +165,6 @@ async function loadOptions() {
     roomTypes.value = []
     ElMessage.error('加载选项数据失败')
   }
-}
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/rooms/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
 }
 
 const defaultForm = { id: null, buildingId: null, roomTypeId: null, roomNumber: '', floor: 1, rentPrice: 0, image: '', status: 0 }
@@ -184,3 +199,55 @@ async function handleDelete(id: number) {
 
 onMounted(() => { loadOptions(); loadData() })
 </script>
+
+<style scoped>
+.room-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+.room-card-item {
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.room-card-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.room-card-img {
+  width: 100%;
+  height: 120px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.room-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+  color: #c0c4cc;
+  font-size: 13px;
+}
+.room-card-info {
+  padding: 8px 0 0;
+}
+.room-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.room-card-number {
+  font-weight: 700;
+  font-size: 15px;
+}
+.room-card-detail {
+  color: #909399;
+  font-size: 12px;
+  margin: 6px 0;
+}
+.room-card-price {
+  color: #f56c6c;
+  font-weight: 700;
+  font-size: 16px;
+}
+</style>

@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +60,7 @@ public class TenantController {
         return Result.success(tenantService.count(wrapper) == 0);
     }
 
+    @PreAuthorize("hasAuthority('tenant:create')")
     @OperationLog(module = "Tenant Management", operation = "Create Tenant")
     @PostMapping
     public Result<Boolean> create(@Valid @RequestBody TenantDTO dto) {

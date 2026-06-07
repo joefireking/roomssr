@@ -164,7 +164,9 @@ CREATE TABLE IF NOT EXISTS contract (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_tenant_id (tenant_id),
     INDEX idx_room_id (room_id),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    INDEX idx_room_status (room_id, status),
+    INDEX idx_tenant_status (tenant_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS bill (
@@ -186,7 +188,9 @@ CREATE TABLE IF NOT EXISTS bill (
     INDEX idx_contract_id (contract_id),
     INDEX idx_tenant_id (tenant_id),
     INDEX idx_status (status),
-    INDEX idx_billing_month (billing_month)
+    INDEX idx_billing_month (billing_month),
+    INDEX idx_tenant_status (tenant_id, status),
+    INDEX idx_due_status (due_date, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS payment (
@@ -224,7 +228,8 @@ CREATE TABLE IF NOT EXISTS repair_order (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_room_id (room_id),
     INDEX idx_status (status),
-    INDEX idx_assignee_id (assignee_id)
+    INDEX idx_assignee_id (assignee_id),
+    INDEX idx_room_status (room_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS operation_log (

@@ -38,8 +38,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         List<String> roles = baseMapper.selectRoleCodesByUserId(loginUser.getUserId());
+        List<String> permissions = baseMapper.selectPermissionCodesByUserId(loginUser.getUserId());
 
-        String token = jwtUtil.generateToken(loginUser.getUserId(), loginUser.getUsername(), roles);
+        String token = jwtUtil.generateToken(loginUser.getUserId(), loginUser.getUsername(), roles, permissions);
 
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -52,7 +53,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public Map<String, Object> getUserInfo(Long userId) {
         SysUser user = getById(userId);
         if (user == null) {
-            throw new BusinessException("User not found");
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
         user.setPassword(null);
 

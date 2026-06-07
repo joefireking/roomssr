@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,13 +60,14 @@ public class RoomController {
         return Result.success(roomService.getById(id));
     }
 
+    @PreAuthorize("hasAuthority('room:create')")
     @OperationLog(module = "Room Management", operation = "Create Room")
     @PostMapping
     public Result<Boolean> create(@Valid @RequestBody RoomDTO dto) {
         Room room = new Room();
         org.springframework.beans.BeanUtils.copyProperties(dto, room);
         if (dto.getStatus() != null) {
-            room.setStatus(com.apartment.hub.enums.RoomStatus.values()[dto.getStatus()]);
+            room.setStatus(RoomStatus.fromCode(dto.getStatus()));
         }
         // Auto-generate image if not provided
         if (room.getImage() == null || room.getImage().isBlank()) {
@@ -74,6 +76,7 @@ public class RoomController {
         return Result.success(roomService.save(room));
     }
 
+    @PreAuthorize("hasAuthority('room:update')")
     @OperationLog(module = "Room Management", operation = "Update Room")
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody RoomDTO dto) {
@@ -81,7 +84,7 @@ public class RoomController {
         if (room == null) return Result.fail("Room not found");
         org.springframework.beans.BeanUtils.copyProperties(dto, room);
         if (dto.getStatus() != null) {
-            room.setStatus(com.apartment.hub.enums.RoomStatus.values()[dto.getStatus()]);
+            room.setStatus(RoomStatus.fromCode(dto.getStatus()));
         }
         return Result.success(roomService.updateById(room));
     }
@@ -127,6 +130,7 @@ public class RoomController {
         return Result.success(similar);
     }
 
+    @PreAuthorize("hasAuthority('room:delete')")
     @OperationLog(module = "Room Management", operation = "Delete Room")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {

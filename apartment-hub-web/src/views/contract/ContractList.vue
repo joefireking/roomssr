@@ -3,7 +3,7 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="草稿" :value="0" /><el-option label="生效" :value="1" />
             <el-option label="到期" :value="2" /><el-option label="终止" :value="3" />
           </el-select>
@@ -59,11 +59,12 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 import ContractViewer from './ContractViewer.vue'
+import { useTable } from '@/composables/useTable'
 
-const loading = ref(false)
-const tableData = ref<any[]>([])
-const total = ref(0)
-const query = reactive({ status: null as any, current: 1, size: 10 })
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ status: any }>({
+  url: '/contracts/list',
+  filters: { status: null }
+})
 const viewerVisible = ref(false)
 const viewerContractId = ref<number | null>(null)
 const tenantMap = ref<Record<number, string>>({})
@@ -88,15 +89,6 @@ function contractStatusType(s: number) { return statusTypes[s] || 'info' }
 function viewContract(row: any) {
   viewerContractId.value = row.id
   viewerVisible.value = true
-}
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/contracts/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
 }
 
 async function handleTerminate(row: any) {

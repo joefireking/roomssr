@@ -1,6 +1,7 @@
 package com.apartment.hub.service.impl;
 
 import com.apartment.hub.common.BusinessException;
+import com.apartment.hub.common.ResultCode;
 import com.apartment.hub.entity.Room;
 import com.apartment.hub.enums.RoomStatus;
 import com.apartment.hub.mapper.RoomMapper;
@@ -19,14 +20,14 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
     public void changeStatus(Long roomId, Integer newStatusCode) {
         Room room = getById(roomId);
         if (room == null) {
-            throw new BusinessException("Room not found");
+            throw new BusinessException(ResultCode.ROOM_NOT_FOUND);
         }
         RoomStatus target = RoomStatus.fromCode(newStatusCode);
         RoomStatus current = room.getStatus();
 
         // State transition validation
         if (!isValidTransition(current, target)) {
-            throw new BusinessException("Invalid status transition: " + current + " -> " + target);
+            throw new BusinessException(ResultCode.INVALID_STATUS_TRANSITION);
         }
 
         room.setStatus(target);

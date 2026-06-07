@@ -5,7 +5,7 @@
         <el-form-item label="姓名"><el-input v-model="query.name" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="电话"><el-input v-model="query.phone" placeholder="电话" clearable /></el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="query.current = 1; loadData()">搜索</el-button>
+          <el-button type="primary" @click="resetAndLoad">搜索</el-button>
           <el-button type="success" @click="showDialog()">新增租户</el-button>
         </el-form-item>
       </el-form>
@@ -74,28 +74,20 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useTable } from '@/composables/useTable'
 
-const loading = ref(false)
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ name: string; phone: string }>({
+  url: '/tenants/list',
+  filters: { name: '', phone: '' }
+})
 const saving = ref(false)
 const dialogVisible = ref(false)
-const tableData = ref<any[]>([])
-const total = ref(0)
 const formRef = ref()
-const query = reactive({ name: '', phone: '', current: 1, size: 10 })
 const form = reactive<any>({ id: null, name: '', gender: 1, phone: '', idCard: '', tag: '', emergencyContact: '', emergencyPhone: '', remark: '' })
 const rules = {
   name: [{ required: true, message: '必填', trigger: 'blur' }],
   phone: [{ required: true, message: '必填', trigger: 'blur' }, { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }],
   idCard: [{ required: true, message: '必填', trigger: 'blur' }, { pattern: /^\d{17}[\dXx]$/, message: '身份证号格式不正确', trigger: 'blur' }]
-}
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/tenants/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
 }
 
 const defaultForm = { id: null, name: '', gender: 1, phone: '', idCard: '', tag: '', emergencyContact: '', emergencyPhone: '', remark: '' }

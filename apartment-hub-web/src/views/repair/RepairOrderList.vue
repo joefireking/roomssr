@@ -3,14 +3,14 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="待处理" :value="0" /><el-option label="已分配" :value="1" />
             <el-option label="处理中" :value="2" /><el-option label="已完成" :value="3" />
             <el-option label="已验证" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="query.type" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.type" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="水管" :value="0" /><el-option label="家具" :value="1" />
             <el-option label="电器" :value="2" /><el-option label="网络" :value="3" />
             <el-option label="其他" :value="4" />
@@ -92,15 +92,16 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
+import { useTable } from '@/composables/useTable'
 
-const loading = ref(false)
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ status: any; type: any }>({
+  url: '/repair-orders/list',
+  filters: { status: null, type: null }
+})
 const saving = ref(false)
 const createVisible = ref(false)
-const tableData = ref<any[]>([])
 const allRooms = ref<any[]>([])
-const total = ref(0)
 const createFormRef = ref()
-const query = reactive({ status: null as any, type: null as any, current: 1, size: 10 })
 const createForm = reactive({ roomId: null as any, type: 0, priority: 1, description: '' })
 const createRules = { roomId: [{ required: true, message: '必填', trigger: 'change' }], type: [{ required: true, message: '必填', trigger: 'change' }] }
 const roomMap = ref<Record<number, string>>({})
@@ -117,15 +118,6 @@ const statusLabels: Record<number, string> = { 0: '待处理', 1: '已分配', 2
 const priorityLabels: Record<number, string> = { 0: '紧急', 1: '普通', 2: '低' }
 function statusType(s: number) { return ['', 'primary', 'warning', 'success', ''][s] || 'info' }
 function priorityType(s: number) { return ['danger', '', 'info'][s] || '' }
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/repair-orders/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
-}
 
 async function showCreateDialog() {
   try {

@@ -76,18 +76,18 @@ public class BillServiceImpl extends ServiceImpl<BillMapper, Bill> implements Bi
     public void payBill(PaymentDTO dto, Long operatorId) {
         Bill bill = getById(dto.getBillId());
         if (bill == null) {
-            throw new BusinessException("Bill not found");
+            throw new BusinessException(ResultCode.BILL_NOT_FOUND);
         }
         if (bill.getStatus() == BillStatus.PAID) {
             throw new BusinessException(ResultCode.BILL_ALREADY_PAID);
         }
         if (bill.getStatus() == BillStatus.CANCELLED) {
-            throw new BusinessException("Bill is cancelled");
+            throw new BusinessException(ResultCode.BAD_REQUEST);
         }
 
         // Validate payment amount matches bill amount
         if (dto.getAmount().compareTo(bill.getAmount()) != 0) {
-            throw new BusinessException("Payment amount does not match bill amount");
+            throw new BusinessException(ResultCode.BILL_AMOUNT_MISMATCH);
         }
 
         // Concurrent-safe update: only mark PAID if still PENDING/OVERDUE
@@ -98,7 +98,7 @@ public class BillServiceImpl extends ServiceImpl<BillMapper, Bill> implements Bi
                 .set(Bill::getPaidTime, LocalDateTime.now())
                 .update();
         if (!updated) {
-            throw new BusinessException("Bill already paid or status changed");
+            throw new BusinessException(ResultCode.BILL_STATUS_CHANGED);
         }
 
         // Create payment record
@@ -109,7 +109,7 @@ public class BillServiceImpl extends ServiceImpl<BillMapper, Bill> implements Bi
         payment.setAmount(dto.getAmount());
         com.apartment.hub.enums.PaymentMethod[] methods = com.apartment.hub.enums.PaymentMethod.values();
         if (dto.getPaymentMethod() < 0 || dto.getPaymentMethod() >= methods.length) {
-            throw new BusinessException("Invalid payment method: " + dto.getPaymentMethod());
+            throw new BusinessException(ResultCode.INVALID_PAYMENT_METHOD);
         }
         payment.setPaymentMethod(methods[dto.getPaymentMethod()]);
         payment.setPaymentTime(LocalDateTime.now());

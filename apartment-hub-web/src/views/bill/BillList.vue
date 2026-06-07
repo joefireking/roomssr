@@ -12,13 +12,13 @@
     <el-card>
       <el-form inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.status" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="待付" :value="0" /><el-option label="已付" :value="1" />
             <el-option label="逾期" :value="2" /><el-option label="取消" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="query.billType" placeholder="全部" clearable @change="query.current = 1; loadData()">
+          <el-select v-model="query.billType" placeholder="全部" clearable @change="resetAndLoad">
             <el-option label="租金" :value="0" /><el-option label="押金" :value="1" />
             <el-option label="水电" :value="2" /><el-option label="物业" :value="3" />
           </el-select>
@@ -85,14 +85,15 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useTable } from '@/composables/useTable'
 
-const loading = ref(false)
+const { loading, tableData, total, query, loadData, resetAndLoad } = useTable<{ status: any; billType: any }>({
+  url: '/bills/list',
+  filters: { status: null, billType: null }
+})
 const paying = ref(false)
 const payDialogVisible = ref(false)
-const tableData = ref<any[]>([])
-const total = ref(0)
 const payBill = ref<any>(null)
-const query = reactive({ status: null as any, billType: null as any, current: 1, size: 10 })
 const payForm = reactive({ paymentMethod: 0, amount: 0, remark: '' })
 const tenantMap = ref<Record<number, string>>({})
 const roomMap = ref<Record<number, string>>({})
@@ -130,15 +131,6 @@ async function loadStats() {
     statCards.value[1].value = '¥' + (res.data.totalPending || 0)
     statCards.value[2].value = '¥' + (res.data.totalOverdue || 0)
   } catch { /* handled */ }
-}
-
-async function loadData() {
-  loading.value = true
-  try {
-    const res: any = await request.get('/bills/list', { params: query })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally { loading.value = false }
 }
 
 function showPayDialog(bill: any) {

@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,7 @@ public class ContractController {
         return Result.success(contractService.getById(id));
     }
 
+    @PreAuthorize("hasAuthority('contract:create')")
     @OperationLog(module = "Contract Management", operation = "Create Contract")
     @PostMapping
     public Result<Contract> create(@Valid @RequestBody ContractCreateDTO dto) {
