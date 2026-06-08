@@ -116,16 +116,16 @@ INSERT INTO room_type (id, type_name, area, orientation, base_price, facilities,
 
 -- Sample Rooms
 INSERT INTO room (id, building_id, room_type_id, room_number, floor, rent_price, image, status) VALUES
-(1, 1, 1, 'A-101', 1, 1500.00, 'https://picsum.photos/seed/apt-single-01/400/300', 0),
-(2, 1, 1, 'A-102', 1, 1500.00, 'https://picsum.photos/seed/apt-single-01/400/300', 0),
-(3, 1, 2, 'A-201', 2, 2500.00, 'https://picsum.photos/seed/apt-double-01/400/300', 0),
-(4, 1, 2, 'A-202', 2, 2500.00, 'https://picsum.photos/seed/apt-double-01/400/300', 0),
-(5, 1, 3, 'A-301', 3, 3800.00, 'https://picsum.photos/seed/apt-suite-01/400/300', 0),
-(6, 2, 1, 'B-101', 1, 1500.00, 'https://picsum.photos/seed/apt-single-02/400/300', 0),
-(7, 2, 1, 'B-102', 1, 1500.00, 'https://picsum.photos/seed/apt-single-02/400/300', 0),
-(8, 2, 2, 'B-201', 2, 2500.00, 'https://picsum.photos/seed/apt-double-02/400/300', 0),
-(9, 3, 2, 'T1-301', 3, 2800.00, 'https://picsum.photos/seed/apt-double-02/400/300', 0),
-(10, 3, 3, 'T1-501', 5, 4200.00, 'https://picsum.photos/seed/apt-suite-01/400/300', 0);
+(1, 1, 1, 'A-101', 1, 1500.00, '/api/images/1.jpg', 0),
+(2, 1, 1, 'A-102', 1, 1500.00, '/api/images/2.jpg', 0),
+(3, 1, 2, 'A-201', 2, 2500.00, '/api/images/3.jpg', 0),
+(4, 1, 2, 'A-202', 2, 2500.00, '/api/images/4.jpg', 0),
+(5, 1, 3, 'A-301', 3, 3800.00, '/api/images/5.jpg', 0),
+(6, 2, 1, 'B-101', 1, 1500.00, '/api/images/6.jpg', 0),
+(7, 2, 1, 'B-102', 1, 1500.00, '/api/images/7.jpg', 0),
+(8, 2, 2, 'B-201', 2, 2500.00, '/api/images/8.jpg', 0),
+(9, 3, 2, 'T1-301', 3, 2800.00, '/api/images/1.jpg', 0),
+(10, 3, 3, 'T1-501', 5, 4200.00, '/api/images/2.jpg', 0);
 
 -- Sample Tenants
 INSERT INTO tenant (id, name, gender, phone, id_card, emergency_contact, emergency_phone, tag) VALUES
@@ -142,12 +142,12 @@ INSERT INTO tenant (id, name, gender, phone, id_card, emergency_contact, emergen
 
 -- Expand rooms so pages and reports have richer data
 INSERT INTO room (id, building_id, room_type_id, room_number, floor, rent_price, image, status) VALUES
-(11, 1, 1, 'A-401', 4, 1650.00, 'https://picsum.photos/seed/apt-single-03/400/300', 0),
-(12, 1, 2, 'A-402', 4, 2600.00, 'https://picsum.photos/seed/apt-double-03/400/300', 0),
-(13, 2, 1, 'B-301', 3, 1600.00, 'https://picsum.photos/seed/apt-single-04/400/300', 0),
-(14, 2, 3, 'B-501', 5, 3950.00, 'https://picsum.photos/seed/apt-suite-02/400/300', 0),
-(15, 3, 1, 'T1-201', 2, 1800.00, 'https://picsum.photos/seed/apt-single-05/400/300', 0),
-(16, 3, 2, 'T1-401', 4, 3000.00, 'https://picsum.photos/seed/apt-double-04/400/300', 0);
+(11, 1, 1, 'A-401', 4, 1650.00, '/api/images/3.jpg', 0),
+(12, 1, 2, 'A-402', 4, 2600.00, '/api/images/4.jpg', 0),
+(13, 2, 1, 'B-301', 3, 1600.00, '/api/images/5.jpg', 0),
+(14, 2, 3, 'B-501', 5, 3950.00, '/api/images/6.jpg', 0),
+(15, 3, 1, 'T1-201', 2, 1800.00, '/api/images/7.jpg', 0),
+(16, 3, 2, 'T1-401', 4, 3000.00, '/api/images/8.jpg', 0);
 
 -- Active contracts
 INSERT INTO contract (id, contract_no, tenant_id, room_id, start_date, end_date, rent_amount, deposit_amount, payment_cycle, status, remark) VALUES

@@ -8,6 +8,7 @@ import com.apartment.hub.service.RoomService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ public class ReportController {
     private final RoomService roomService;
     private final BillService billService;
 
+    @Cacheable(value = "dashboard", unless = "#result == null")
     @GetMapping("/dashboard")
     public Result<Map<String, Object>> dashboard() {
         Map<String, Object> data = new HashMap<>();

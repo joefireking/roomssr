@@ -2,6 +2,7 @@ package com.apartment.hub.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.apartment.hub.common.Result;
+import com.apartment.hub.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -29,6 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token == null) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (tokenService.isBlacklisted(token)) {
+            response.setStatus(401);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(Result.fail(401, "Token has been logged out")));
             return;
         }
 

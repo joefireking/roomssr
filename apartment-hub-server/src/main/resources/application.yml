@@ -31,8 +31,31 @@ jwt:
   secret: ${JWT_SECRET:ApartmentHub2026SecretKeyForJWTTokenGenerationMustBe256Bits!!}
   expiration: ${JWT_EXPIRATION:86400000}
 
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000
+      cache-null-values: false
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+minio:
+  endpoint: http://127.0.0.1:9000
+  access-key: admin
+  secret-key: 12345678
+  bucket: room

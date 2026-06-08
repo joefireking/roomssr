@@ -120,9 +120,9 @@ public class ContractController {
                 h1{text-align:center;font-size:24px;margin-bottom:30px}
                 .clause{margin-bottom:12px;text-indent:2em}
                 .sig-block{display:flex;justify-content:space-between;margin-top:60px}
-                .sig-box{width:45%;text-align:center}
+                .sig-box{width:45%%;text-align:center}
                 .sig-line{border-bottom:1px solid #333;height:40px;margin:10px 0}
-                table{width:100%;border-collapse:collapse;margin:16px 0}
+                table{width:100%%;border-collapse:collapse;margin:16px 0}
                 td,th{border:1px solid #ccc;padding:8px 12px;text-align:left}
                 </style></head>
                 <body>

@@ -69,10 +69,6 @@ public class RoomController {
         if (dto.getStatus() != null) {
             room.setStatus(RoomStatus.fromCode(dto.getStatus()));
         }
-        // Auto-generate image if not provided
-        if (room.getImage() == null || room.getImage().isBlank()) {
-            room.setImage("https://picsum.photos/seed/apt-room-" + System.currentTimeMillis() % 100000 + "/400/300");
-        }
         return Result.success(roomService.save(room));
     }
 

@@ -2,14 +2,10 @@ package com.apartment.hub.controller;
 
 import com.apartment.hub.aspect.OperationLog;
 import com.apartment.hub.common.Result;
-import org.springframework.beans.factory.annotation.Value;
+import com.apartment.hub.service.MinioService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
@@ -19,12 +15,15 @@ public class UploadController {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     private static final Set<String> ALLOWED_EXT = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
 
-    @Value("${upload.path:uploads}")
-    private String uploadPath;
+    private final MinioService minioService;
+
+    public UploadController(MinioService minioService) {
+        this.minioService = minioService;
+    }
 
     @OperationLog(module = "File Management", operation = "Upload File")
     @PostMapping
-    public Result<Map<String, String>> upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result<Map<String, String>> upload(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return Result.fail("File is empty");
         }
@@ -47,21 +46,15 @@ public class UploadController {
             return Result.fail("Unsupported file type, allowed: jpg, png, gif, webp");
         }
 
-        String filename = UUID.randomUUID() + ext;
-
-        Path baseDir = Paths.get(uploadPath);
-        if (!baseDir.isAbsolute()) {
-            baseDir = Paths.get(System.getProperty("user.dir")).resolve(uploadPath);
+        try {
+            String objectName = minioService.upload(file, "rooms");
+            String url = "/api/images/" + objectName;
+            Map<String, String> data = new HashMap<>();
+            data.put("url", url);
+            data.put("name", originalName);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.fail("Upload failed: " + e.getMessage());
         }
-        Path dir = baseDir.resolve("rooms");
-        Files.createDirectories(dir);
-        file.transferTo(dir.resolve(filename).toFile());
-
-        String url = "/uploads/rooms/" + filename;
-
-        Map<String, String> data = new HashMap<>();
-        data.put("url", url);
-        data.put("name", originalName);
-        return Result.success(data);
     }
 }

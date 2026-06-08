@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class BuildingController {
     private final BuildingService buildingService;
     private final RoomService roomService;
 
+    @Cacheable(value = "buildings", key = "'list:' + #apartmentId + ':' + #name + ':' + #current + ':' + #size", unless = "#result == null")
     @GetMapping("/list")
     public Result<PageResult<Building>> list(
             @RequestParam(required = false) Long apartmentId,
@@ -47,6 +50,7 @@ public class BuildingController {
         return Result.success(buildingService.getById(id));
     }
 
+    @CacheEvict(value = "buildings", allEntries = true)
     @OperationLog(module = "Building Management", operation = "Create Building")
     @PostMapping
     public Result<Boolean> create(@Valid @RequestBody BuildingDTO dto) {
@@ -56,6 +60,7 @@ public class BuildingController {
         return Result.success(buildingService.save(building));
     }
 
+    @CacheEvict(value = "buildings", allEntries = true)
     @OperationLog(module = "Building Management", operation = "Update Building")
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody BuildingDTO dto) {
@@ -65,6 +70,7 @@ public class BuildingController {
         return Result.success(buildingService.updateById(building));
     }
 
+    @CacheEvict(value = "buildings", allEntries = true)
     @OperationLog(module = "Building Management", operation = "Delete Building")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
