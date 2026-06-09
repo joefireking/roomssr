@@ -1,5 +1,6 @@
 package com.apartment.hub.config;
 
+import com.apartment.hub.service.KnowledgeBaseService;
 import com.apartment.hub.tool.AiToolService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,11 +9,14 @@ import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration
 @RequiredArgsConstructor
 public class AiToolConfig {
 
     private final AiToolService toolService;
+    private final KnowledgeBaseService kbService;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -66,6 +70,16 @@ public class AiToolConfig {
                 .build();
     }
 
+    @Bean
+    public FunctionCallback searchKnowledgeBaseFn() {
+        return FunctionCallback.builder()
+                .function("searchKnowledgeBase", (SearchKbInput input) ->
+                        toJson(Map.of("context", kbService.searchContext(input.question, 3))))
+                .description("搜索公寓管理知识库，查询管理制度、合同条款、退租流程、支付规则等文档。参数 question 为要查询的问题")
+                .inputType(SearchKbInput.class)
+                .build();
+    }
+
     @SneakyThrows
     private String toJson(Object obj) {
         return objectMapper.writeValueAsString(obj);
@@ -75,5 +89,6 @@ public class AiToolConfig {
     public record GetRoomInfoInput(String roomNumber) {}
     public record GetExpiringContractsInput(int withinDays) {}
     public record GetTenantInfoInput(String name) {}
+    public record SearchKbInput(String question) {}
     public record NoArgsInput() {}
 }
