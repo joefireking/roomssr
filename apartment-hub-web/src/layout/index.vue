@@ -65,6 +65,7 @@
         <router-view />
       </el-main>
     </el-container>
+    <AiChat />
   </el-container>
 </template>
 
@@ -75,6 +76,7 @@ import { constantRoutes } from '@/router'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import type { RouteRecordRaw } from 'vue-router'
+import AiChat from '@/components/AiChat.vue'
 
 const route = useRoute()
 const router = useRouter()

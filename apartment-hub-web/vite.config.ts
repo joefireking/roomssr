@@ -10,6 +10,7 @@ export default defineConfig({
     }
   },
   server: {
+    host: '0.0.0.0',
     port: 5173,
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
@@ -20,6 +21,11 @@ export default defineConfig({
       '/uploads': {
         target: 'http://localhost:8080',
         changeOrigin: true
+      },
+      '/ws': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true
       }
     }
   }
