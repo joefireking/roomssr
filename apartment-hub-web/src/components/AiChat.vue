@@ -99,10 +99,11 @@ let ws: WebSocket | null = null
 let reconnectTimer: number | null = null
 
 const suggestions = [
-  'A-102房间有人住吗',
-  '下个月到期的合同有哪些',
+  'A-101房间有人住吗',
+  '有哪些逾期未缴的账单',
   '本月租金收入多少',
-  '帮我查一下欠费情况',
+  '未来60天内到期的合同有哪些',
+  '帮我查一下张三的租客信息',
 ]
 
 function getToken(): string {
